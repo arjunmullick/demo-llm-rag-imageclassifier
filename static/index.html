@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Imaging RAG Demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 24px; }
+      .container { max-width: 860px; margin: 0 auto; }
+      .row { display: flex; gap: 8px; }
+      textarea { width: 100%; height: 100px; }
+      button { padding: 8px 12px; }
+      .bubble { background: #f5f5f7; padding: 12px; border-radius: 10px; margin: 12px 0; }
+      .ctx { font-size: 13px; color: #333; white-space: pre-wrap; background: #fafafa; border: 1px solid #eee; padding: 8px; border-radius: 8px; }
+      .muted { color: #777; font-size: 12px; }
+      .header { display: flex; align-items: center; justify-content: space-between; }
+      code { background: #efefef; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Imaging RAG Demo</h2>
+        <button id="buildIndex">Build/Refresh Index</button>
+      </div>
+      <p class="muted">
+        Uses OpenAI chat + embeddings to answer questions about a small imaging dataset.
+        Set <code>OPENAI_API_KEY</code> in your environment. The first request builds the index if empty.
+      </p>
+      <div>
+        <textarea id="message" placeholder="Ask about imaging findings, modalities, or reports..."></textarea>
+        <div class="row">
+          <button id="send">Ask (Stream)</button>
+          <label class="muted">Top-K: <input id="topk" type="number" value="4" min="1" max="10" style="width:50px"></label>
+        </div>
+      </div>
+
+      <div id="output"></div>
+
+      <hr>
+      <h3>Cat vs Dog Classifier</h3>
+      <p class="muted">Upload an image; the model will classify it as cat or dog. Optionally include few-shot example images to improve accuracy.</p>
+      <div class="row">
+        <input type="file" id="imgFile" accept="image/*" />
+        <button id="classifyBtn">Classify</button>
+      </div>
+      <div class="row" style="margin-top:8px; align-items: center; gap: 12px;">
+        <label><input type="checkbox" id="fewshot"> Use few-shot examples</label>
+        <span class="muted">Cat example:</span>
+        <input type="file" id="exCat" accept="image/*" />
+        <span class="muted">Dog example:</span>
+        <input type="file" id="exDog" accept="image/*" />
+      </div>
+      <div class="row" style="margin-top:8px">
+        <img id="preview" style="max-width: 200px; max-height: 200px; display:none; border:1px solid #eee; border-radius:6px;" />
+        <div id="clsOut" class="bubble" style="display:none"></div>
+      </div>
+    </div>
+
+    <script>
+      let SESSION_ID = localStorage.getItem('session_id') || null;
+
+      async function ensureSession() {
+        if (SESSION_ID) return SESSION_ID;
+        const res = await fetch('/session', { method: 'POST' });
+        const data = await res.json();
+        SESSION_ID = data.session_id;
+        localStorage.setItem('session_id', SESSION_ID);
+        return SESSION_ID;
+      }
+
+      async function callIngest() {
+        const res = await fetch('/ingest', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+        const data = await res.json();
+        alert('Index built: ' + JSON.stringify(data));
+      }
+
+      async function callChat() {
+        const message = document.getElementById('message').value.trim();
+        const k = parseInt(document.getElementById('topk').value || '4', 10);
+        if(!message) return;
+        await ensureSession();
+
+        const out = document.getElementById('output');
+        const block = document.createElement('div');
+        block.className = 'bubble';
+        block.innerHTML = '<div><b>Answer</b></div><div id="ans"></div><div class="muted" id="meta"></div>';
+        const ans = block.querySelector('#ans');
+        const meta = block.querySelector('#meta');
+        out.prepend(block);
+
+        const params = new URLSearchParams({ message, k: String(k), session_id: SESSION_ID });
+        const es = new EventSource(`/chat/stream?${params.toString()}`);
+        es.onmessage = (ev) => {
+          try {
+            const data = JSON.parse(ev.data);
+            if (data.type === 'token') {
+              ans.textContent += data.content;
+            } else if (data.type === 'end') {
+              meta.textContent = `Model: ${data.model}`;
+              if (data.contexts && data.contexts.length) {
+                const ctxDiv = document.createElement('div');
+                ctxDiv.innerHTML = data.contexts.map(c => `<div class="ctx"><b>Source:</b> ${c.source}<br>${c.text}</div>`).join('\n');
+                out.insertBefore(ctxDiv, block.nextSibling);
+              }
+              es.close();
+            } else if (data.type === 'error') {
+              ans.textContent = 'Error: ' + data.error;
+              es.close();
+            }
+          } catch (e) {
+            console.error('Stream parse error', e);
+          }
+        };
+        es.onerror = () => {
+          es.close();
+        };
+      }
+
+      document.getElementById('buildIndex').addEventListener('click', callIngest);
+      document.getElementById('send').addEventListener('click', callChat);
+      // create a session on load (best-effort)
+      ensureSession().catch(()=>{});
+
+      // image preview
+      const imgInput = document.getElementById('imgFile');
+      const preview = document.getElementById('preview');
+      imgInput.addEventListener('change', () => {
+        const f = imgInput.files?.[0];
+        if (!f) { preview.style.display = 'none'; return; }
+        const url = URL.createObjectURL(f);
+        preview.src = url; preview.style.display = 'block';
+      });
+
+      // classify image
+      document.getElementById('classifyBtn').addEventListener('click', async () => {
+        const f = imgInput.files?.[0];
+        const out = document.getElementById('clsOut');
+        out.style.display = 'block';
+        out.textContent = 'Classifying...';
+        if (!f) { out.textContent = 'Please choose an image first.'; return; }
+        const fd = new FormData();
+        fd.append('file', f);
+        const useFew = (document.getElementById('fewshot')).checked;
+        if (useFew) {
+          fd.append('few_shot', 'true');
+          const ec = (document.getElementById('exCat')).files?.[0];
+          const ed = (document.getElementById('exDog')).files?.[0];
+          if (ec) fd.append('example_cat', ec);
+          if (ed) fd.append('example_dog', ed);
+        }
+        try {
+          const res = await fetch('/classify_image', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (data.detail) {
+            out.textContent = 'Error: ' + data.detail;
+          } else {
+            out.innerHTML = `<b>Label:</b> ${data.label} <span class="muted">(raw: ${data.raw})</span>`;
+          }
+        } catch (e) {
+          out.textContent = 'Network error';
+        }
+      });
+    </script>
+  </body>
+  </html>

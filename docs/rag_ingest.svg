@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360">
+  <style>
+    .box { fill:#fff; stroke:#333; stroke-width:1.4; rx:8; }
+    .title { font: 700 16px system-ui, sans-serif; fill:#111; }
+    .text { font: 13px system-ui, sans-serif; fill:#333; }
+    .arrow { stroke:#333; stroke-width:1.5; marker-end:url(#ah); fill:none; }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="20" y="30">RAG — Ingestion Flow</text>
+
+  <rect class="box" x="40" y="60" width="160" height="80"/>
+  <text class="text" x="55" y="90">Browser UI</text>
+  <text class="text" x="55" y="110">POST /ingest</text>
+
+  <rect class="box" x="240" y="60" width="180" height="80"/>
+  <text class="text" x="255" y="90">FastAPI /ingest</text>
+  <text class="text" x="255" y="110">calls RAG.ingest</text>
+
+  <rect class="box" x="460" y="40" width="200" height="120"/>
+  <text class="text" x="475" y="70">RAG Pipeline</text>
+  <text class="text" x="475" y="90">chunk → embed (batch)</text>
+  <text class="text" x="475" y="110">save items</text>
+
+  <rect class="box" x="700" y="40" width="160" height="80"/>
+  <text class="text" x="715" y="70">OpenAI</text>
+  <text class="text" x="715" y="90">Embeddings</text>
+
+  <rect class="box" x="700" y="160" width="160" height="80"/>
+  <text class="text" x="715" y="190">Vector Index</text>
+  <text class="text" x="715" y="210">data/index.json</text>
+
+  <path class="arrow" d="M 200 100 L 240 100"/>
+  <path class="arrow" d="M 420 100 L 460 100"/>
+  <path class="arrow" d="M 660 80 L 700 80"/>
+  <text class="text" x="610" y="70">embeddings</text>
+  <path class="arrow" d="M 560 160 L 700 200"/>
+  <text class="text" x="565" y="185">write</text>
+
+  <path class="arrow" d="M 240 140 L 80 140"/>
+  <text class="text" x="90" y="155">{added_chunks, index_path}</text>
+</svg>
+

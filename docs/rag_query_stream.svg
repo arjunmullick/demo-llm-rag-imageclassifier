@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420">
+  <style>
+    .box { fill:#fff; stroke:#333; stroke-width:1.4; rx:8; }
+    .title { font: 700 16px system-ui, sans-serif; fill:#111; }
+    .text { font: 13px system-ui, sans-serif; fill:#333; }
+    .arrow { stroke:#333; stroke-width:1.5; marker-end:url(#ah); fill:none; }
+    .sse { stroke:#0a7; stroke-width:1.5; marker-end:url(#ahg); fill:none; }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+    <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a7"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="20" y="30">RAG — Query Flow (Streaming)</text>
+
+  <rect class="box" x="40" y="60" width="200" height="90"/>
+  <text class="text" x="55" y="90">Browser UI</text>
+  <text class="text" x="55" y="110">GET /chat/stream</text>
+
+  <rect class="box" x="280" y="60" width="200" height="90"/>
+  <text class="text" x="295" y="90">FastAPI /chat/stream</text>
+  <text class="text" x="295" y="110">prepare_messages()</text>
+
+  <rect class="box" x="520" y="40" width="210" height="120"/>
+  <text class="text" x="535" y="70">RAG Pipeline</text>
+  <text class="text" x="535" y="90">embed(query) → retrieve</text>
+  <text class="text" x="535" y="110">build prompt + history</text>
+
+  <rect class="box" x="760" y="40" width="180" height="80"/>
+  <text class="text" x="775" y="70">OpenAI Embeddings</text>
+
+  <rect class="box" x="760" y="140" width="180" height="80"/>
+  <text class="text" x="775" y="170">OpenAI Chat</text>
+
+  <path class="arrow" d="M 240 100 L 280 100"/>
+  <path class="arrow" d="M 480 100 L 520 100"/>
+  <path class="arrow" d="M 730 80 L 760 80"/>
+  <path class="arrow" d="M 730 180 L 760 180"/>
+
+  <path class="sse" d="M 380 160 L 140 160"/>
+  <text class="text" x="45" y="155" fill="#0a7">SSE tokens → UI</text>
+</svg>
+

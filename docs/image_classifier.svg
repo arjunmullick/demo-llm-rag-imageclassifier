@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380">
+  <style>
+    .box { fill:#fff; stroke:#333; stroke-width:1.4; rx:8; }
+    .title { font: 700 16px system-ui, sans-serif; fill:#111; }
+    .text { font: 13px system-ui, sans-serif; fill:#333; }
+    .arrow { stroke:#333; stroke-width:1.5; marker-end:url(#ah); fill:none; }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="20" y="30">Image Classifier — Basic & Few‑Shot</text>
+
+  <rect class="box" x="40" y="60" width="220" height="110"/>
+  <text class="text" x="55" y="90">Browser UI</text>
+  <text class="text" x="55" y="110">POST /classify_image</text>
+  <text class="text" x="55" y="130">file[, few_shot, ex_cat, ex_dog]</text>
+
+  <rect class="box" x="300" y="60" width="240" height="140"/>
+  <text class="text" x="315" y="90">FastAPI /classify_image</text>
+  <text class="text" x="315" y="110">build messages:</text>
+  <text class="text" x="335" y="130">- system: rules</text>
+  <text class="text" x="335" y="150">- optional examples</text>
+
+  <rect class="box" x="580" y="60" width="170" height="80"/>
+  <text class="text" x="595" y="90">OpenAI Chat</text>
+  <text class="text" x="595" y="110">(Vision)</text>
+
+  <rect class="box" x="780" y="60" width="140" height="80"/>
+  <text class="text" x="795" y="95">Normalize</text>
+  <text class="text" x="795" y="115">cat|dog|unknown</text>
+
+  <path class="arrow" d="M 260 110 L 300 110"/>
+  <path class="arrow" d="M 540 100 L 580 100"/>
+  <path class="arrow" d="M 750 100 L 780 100"/>
+
+  <path class="arrow" d="M 850 140 L 850 200 L 160 200 L 160 170"/>
+  <text class="text" x="60" y="215">{label, raw}</text>
+</svg>
+
