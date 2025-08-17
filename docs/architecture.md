@@ -21,8 +21,8 @@ flowchart LR
     API1[/POST /ingest/]
     API2[/POST /chat/ & GET /chat/stream/]
     API3[/POST /classify_image/]
-    RAG[RAG Pipeline<br/>(chunk, embed, retrieve, prompt)]
-    VS[(JSON Vector Index<br/>data/index.json )]
+    RAG[RAG Pipeline: chunk, embed, retrieve, prompt]
+    VS[(JSON Vector Index: data/index.json)]
   end
 
   subgraph OpenAI[OpenAI APIs]
